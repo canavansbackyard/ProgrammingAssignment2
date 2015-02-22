@@ -10,28 +10,33 @@
 # the previously-cached inverted matrix.
 
 makeCacheMatrix <- function(x = matrix()) {
-    # Calculates the number of complete observations for each of the 
-    # user-specified CSV files (monitors) and returns the results in the form 
-    # of a summary table. An observation is deemed to be complete if both
-    # the sulfate and nitrate values are not NA. Sulfate values are assumed to
-    # be in Column 2, nitrate values in Column 3.
+    # This function takes as its argument a matrix, creates (and returns) a 
+    # special "matrix" object (viz., a list object whose elements are themselves 
+    # functions that manipulate the matrix), and caches the inverted matrix.  
+    # This function is designed to work in tandem with the cacheSolve() (see
+    # usage notes). No error checking; the function assumes that the matrix is 
+    # invertible.
     #
     # Args:
     #   x: a matrix object to be inverted.
     #
     # Returns:
     #   A list object whose elements are functions designed to manipulate
-    #   the "matrix" object.
-    #
-    # Usage:
-    #   aMatrix = matrix(4, 3, 3, 2, nrow = 2, ncol = 2)
-    #   anotherMatrix = matrix(1, 3, 2, 4, nrow = 2, ncol = 2)
-    #   x <- makeCacheMatrix(aMatrix)
+    #   the "matrix" object. If the list object returned is assigned to
+    #   x, then the functions are accessed thusly:
     #   x$getMatrix() -- get the value of the x matrix
     #   x$setMatrix(anotherMatrix) -- change the value of the matrix
     #   x$getInverve() -- get the cached inverted matrix
     #   x$setInverse(anotherMatrix) -- set (change) the cached value of the 
     #                                  inverted matrix
+    #
+    # Usage:
+    #   aMatrix = matrix(4, 3, 3, 2, nrow = 2, ncol = 2)
+    #   cached <- makeCacheMatrix(aMatrix)
+    #   .
+    #   .
+    #   .
+    #   cached2 <- cacheSolve(cached)
                 
     # initialize the value of the inverted matrix
     invertedMatrix <- NULL
@@ -55,13 +60,41 @@ makeCacheMatrix <- function(x = matrix()) {
     getInverse <- function() invertedMatrix
     
     # return value
-    list(setMatrix = set,
-         getMatrix = get,
+    list(setMatrix = setMatrix,
+         getMatrix = getMatrix,
          setInverse = setInverse,
          getInverse = getInverse)
     }
 }
 
 cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
+    # Returns the inverse of matrix given by the argument x. If available,
+    # the function using a previously cached value for the inverted matrix.
+    # More specifically, the fuction works in tandem with makeCacheMatrix().
+    # See documentation for that function for additional details.
+    #
+    # Args:
+    #   x: a matrix object to be inverted.
+    #
+    # Returns:
+    #   The inverted matrix.
+    #
+    # Usage: see documentation for makeCacheMatrix().
+    
+    # has the matrix already been inverted (cached)? If so, return the 
+    # cached value
+    invertedMatrix <- x$getInverse()
+    if(!is.null(invertedMatrix)) {
+        message("Getting cached data...")
+        return(invertedMatrix)
+    }
+    
+    # otherwise, get the to-be-converted matrix via getMatrix(), invert it,
+    # cache the inverted matrix via setInverse(), and return the inverted 
+    # matrix
+    matrixData <- x$getMatrix()   
+    invertedMatrix <- solve(matrixData, ...)
+    x$setInverse(invertedMatrix)
+    invertedMatrix
 }
+
