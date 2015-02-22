@@ -64,7 +64,6 @@ makeCacheMatrix <- function(x = matrix()) {
          getMatrix = getMatrix,
          setInverse = setInverse,
          getInverse = getInverse)
-    }
 }
 
 cacheSolve <- function(x, ...) {
@@ -97,4 +96,33 @@ cacheSolve <- function(x, ...) {
     x$setInverse(invertedMatrix)
     invertedMatrix
 }
+
+# test the functions
+# This code has been cribbed from Jules Stuifbergen who posted a version of what
+# follows on the discussion forum for the Coursera course, Programming in R, on 
+# 13 February 2015.
+
+# generate the test matrix and calculate its inverse via the "usual"
+# method (i.e., using solve()).
+size <- 1000    # size of the matrix edge
+mymatrix <- matrix(rnorm(size^2), nrow = size, ncol = size)
+print("Calculating matrix inverse via solve()...")
+mymatrix.inverse <- solve(mymatrix)
+print("Matrix inverse solution via solve() completed.")
+
+# now solve the matrix via the cache-method; this should take quite a while 
+# since its the first time it's invoked
+print("Calculating matrix inverse via makeCacheMatrix()...")
+special.matrix <- makeCacheMatrix(mymatrix)
+special.solved.1 <- cacheSolve(special.matrix)
+print("Matrix inverse solution via makeCacheSolution() completed.")
+
+# solve the matrix via the cache-method for a second time; this should be 
+# relatively fast
+print("Calculating matrix inverse via makeCacheMatrix() using cached value...")
+special.solved.2 <- cacheSolve(special.matrix)
+print("Matrix inverse solution via makeCacheSolution() using cached value completed.")
+
+# check if all solved matrices are identical; the statement should return TRUE
+print(paste("Are inverted matrices identical? ", identical(mymatrix.inverse, special.solved.1) & identical(mymatrix.inverse, special.solved.2)))
 
